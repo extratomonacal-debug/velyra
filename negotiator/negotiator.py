@@ -20,13 +20,13 @@ log = logging.getLogger("velyra")
 API_ID = int(os.environ["TELEGRAM_API_ID"])
 API_HASH = os.environ["TELEGRAM_API_HASH"]
 OWNER_ID = int(os.environ["TELEGRAM_OWNER_ID"])
-MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
+MODEL = os.getenv("AI_MODEL", "gemini-2.5-flash")
 DB = Path(os.getenv("DB_PATH", "negotiator.sqlite3"))
 SESSION = os.getenv("TELEGRAM_SESSION", "velyra_negotiator")
 MIN_DELAY = max(2, int(os.getenv("REPLY_DELAY_SECONDS", "8")))
 MAX_AUTO_PER_CHAT_PER_DAY = 12
 DRY_RUN = os.getenv("DRY_RUN", "true").lower() != "false"
-ai = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
+ai = AsyncOpenAI(\n    api_key=os.environ["AI_API_KEY"],\n    base_url=os.getenv("AI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/"),\n)
 tg = TelegramClient(SESSION, API_ID, API_HASH)
 db = sqlite3.connect(DB)
 db.row_factory = sqlite3.Row
