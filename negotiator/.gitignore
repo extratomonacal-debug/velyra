@@ -1,0 +1,1 @@
+.env\n*.session\n*.session-journal\n*.sqlite3\n*.sqlite3-*\n__pycache__/\n.venv/\n
