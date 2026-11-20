@@ -12,3 +12,12 @@
 .socials .social-instagram{--social:#e956a3}
 .socials .social-contact{--social:#a78bfa}
 @media(prefers-reduced-motion:reduce){.socials .social-button,.socials .social-arrow{transition:none!important}}
+
+/* Face-aware editorial crops: keep faces visible in profile cards */
+.profile img{object-fit:cover;object-position:50% 24%;}
+.profile:has(a[href*="twitch.tv/fragger_sandropt"]) img{object-position:50% 42%}
+.profile:has(a[href*="twitch.tv/joanass"]) img{object-position:50% 13%}
+.profile:has(a[href*="twitch.tv/pipachasqueira"]) img{object-position:50% 12%}
+.profile:has(a[href*="twitch.tv/catarina4fun"]) img{object-position:50% 15%}
+.profile:has(a[href*="twitch.tv/jamiedrakehd"]) img{object-position:50% 40%}
+.profile:has(a[href*="twitch.tv/9miller_thereal1"]) img{object-position:50% 34%}
