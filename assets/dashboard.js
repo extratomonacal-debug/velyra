@@ -105,7 +105,53 @@ form.addEventListener("submit",async e=>{
  }catch(err){message($("editor-status"),err.message||"Falha ao guardar.",true)}
  finally{btn.disabled=false}
 });
+let settingPassword=false;
+function showPasswordSetup(){
+ settingPassword=true;
+ login.classList.remove("hidden");app.classList.add("hidden");
+ $("login-form").classList.add("hidden");
+ $("forgot-password").classList.add("hidden");
+ $("password-form").classList.remove("hidden");
+ message(loginStatus,"Define uma palavra-passe para concluir o acesso.");
+}
+$("password-form").addEventListener("submit",async e=>{
+ e.preventDefault();
+ const pass=$("new-password").value;
+ if(pass!==$("confirm-password").value){message($("password-status"),"As palavras-passe não coincidem.",true);return}
+ if(pass.length<10){message($("password-status"),"Utiliza pelo menos 10 caracteres.",true);return}
+ const btn=$("password-button");btn.disabled=true;
+ const {error}=await supabase.auth.updateUser({password:pass});
+ btn.disabled=false;
+ if(error){message($("password-status"),error.message,true);return}
+ $("password-form").classList.add("hidden");
+ $("login-form").classList.remove("hidden");
+ $("forgot-password").classList.remove("hidden");
+ $("new-password").value="";$("confirm-password").value="";
+ settingPassword=false;
+ history.replaceState(null,"",location.pathname);
+ message(loginStatus,"Palavra-passe definida. A abrir a dashboard...");
+ await adminCheck();
+});
+$("forgot-password").addEventListener("click",async()=>{
+ const email=$("email").value.trim();
+ if(!email){message(loginStatus,"Introduz primeiro o teu email.",true);return}
+ const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+"/pagante"});
+ message(loginStatus,error?"Não foi possível enviar o email: "+error.message:"Se a conta existir, receberás um email para definir a palavra-passe.",Boolean(error));
+});
 if(!configured){
  message(loginStatus,"Configuração pendente: é necessário associar a base de dados Supabase da VELYRA.",true);
- $("login-button").disabled=true
-}else{adminCheck()}
+ $("login-button").disabled=true;
+ $("forgot-password").disabled=true;
+}else{
+ const inviteLink=location.hash.includes("type=invite")||location.hash.includes("type=recovery")||location.search.includes("type=invite")||location.search.includes("type=recovery");
+ supabase.auth.onAuthStateChange((event,session)=>{
+  if(event==="PASSWORD_RECOVERY"||(event==="SIGNED_IN"&&inviteLink&&!settingPassword)){
+   showPasswordSetup();
+  }
+ });
+ (async()=>{
+  const {data}=await supabase.auth.getSession();
+  if(inviteLink&&data.session)showPasswordSetup();
+  else if(!settingPassword)await adminCheck();
+ })();
+}
