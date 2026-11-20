@@ -9,7 +9,7 @@ function display(list,kind){
  if(!list.length){const e=element("div","empty");e.append(element("h3","",kind==="streamer"?"Novos streamers em breve.":"Conhece a equipa em breve."),element("p","","Os perfis confirmados vão aparecer aqui."));target.append(e);return;}
  for(const entry of list){
   const card=element("article","profile");
-  if(safeUrl(entry.photo_url)){const img=element("img");img.src=safeUrl(entry.photo_url);img.alt="Fotografia de "+entry.name;img.loading="lazy";img.referrerPolicy="no-referrer";card.append(img);}
+  if(safeUrl(entry.photo_url)){const img=element("img");img.src=safeUrl(entry.photo_url);img.alt="Fotografia de "+entry.name;img.loading="lazy";img.referrerPolicy="no-referrer";img.addEventListener("error",()=>{const avatar=element("div","avatar",entry.name.trim().slice(0,1).toUpperCase());img.replaceWith(avatar)},{once:true});card.append(img);}
   else{const a=element("div","avatar",entry.name.trim().slice(0,1).toUpperCase());card.append(a);}
   card.append(element("h3","",entry.name));
   if(entry.role)card.append(element("div","role",entry.role));
@@ -17,7 +17,7 @@ function display(list,kind){
   const socials=element("div","socials");
   for(const [key,label] of [["twitch_url","Twitch"],["kick_url","Kick"],["youtube_url","YouTube"],["tiktok_url","TikTok"],["instagram_url","Instagram"],["contact_url","Contacto"]]){
     const u=safeUrl(entry[key]);if(!u)continue;
-    const a=element("a","",label+" ↗");a.href=u;a.rel="noopener noreferrer";a.target="_blank";socials.append(a);
+    const a=element("a","social-button social-"+key.replace("_url",""),label);a.href=u;a.rel="noopener noreferrer";a.target="_blank";a.setAttribute("aria-label","Abrir "+label+" de "+entry.name);const arrow=element("span","social-arrow","↗");a.append(arrow);socials.append(a);
   }
   if(socials.children.length)card.append(socials);
   target.append(card);
