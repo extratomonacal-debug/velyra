@@ -21,3 +21,30 @@
 .profile:has(a[href*="twitch.tv/catarina4fun"]) img{object-position:50% 15%}
 .profile:has(a[href*="twitch.tv/jamiedrakehd"]) img{object-position:50% 40%}
 .profile:has(a[href*="twitch.tv/9miller_thereal1"]) img{object-position:50% 34%}
+
+/* VELYRA cinematic bubble portal — hero navigation */
+.portal-link{position:relative;overflow:hidden;isolation:isolate}
+.portal-link::before{content:"";position:absolute;inset:-80%;background:radial-gradient(circle,#fff8 0%,#c99bff44 20%,transparent 45%);transform:translateX(-85%) rotate(15deg);transition:transform .65s cubic-bezier(.2,.8,.2,1);z-index:-1}
+.portal-link:hover::before{transform:translateX(80%) rotate(15deg)}
+.portal-link:hover{box-shadow:0 0 0 1px #bf8affaa,0 10px 38px #8c4afc5c}
+.portal-overlay{position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0;visibility:hidden;overflow:hidden;display:grid;place-items:center}
+.portal-overlay.active{visibility:visible;opacity:1}
+.portal-backdrop{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,#b67bff 0%,#7037c8 35%,#160b2c 85%);transform:scale(.01);border-radius:50%;opacity:0}
+.portal-overlay.active .portal-backdrop{animation:portal-fill 1.3s cubic-bezier(.18,.8,.2,1) forwards}
+.portal-overlay.out .portal-backdrop{animation:portal-clear .7s cubic-bezier(.75,0,.95,.5) forwards}
+.portal-bubbles{position:absolute;inset:0;overflow:hidden}
+.portal-bubble{position:absolute;left:var(--x);top:var(--y);width:var(--size);height:var(--size);border-radius:50%;border:1px solid #ffffff85;background:radial-gradient(circle at 27% 23%,#ffffffa8 0%,#dfb8ff66 19%,#9550f1b5 53%,#4e1c98e6 84%);box-shadow:inset -9px -12px 25px #3c147c88,inset 5px 6px 12px #fff7,0 0 22px #bc80ff8a;opacity:0;transform:translate(-50%,-50%) scale(.05)}
+.portal-overlay.active .portal-bubble{animation:portal-bubble-rise var(--dur) cubic-bezier(.14,.7,.25,1) var(--delay) both}
+.portal-core{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:20px;opacity:0;transform:scale(.4);filter:blur(10px)}
+.portal-overlay.active .portal-core{animation:portal-core-in .8s cubic-bezier(.18,.8,.2,1) .55s both}
+.portal-overlay.out .portal-core{animation:portal-core-out .35s ease both}
+.portal-logo{display:grid;place-items:center;width:120px;height:120px;border:2px solid #f0d6ffb8;border-radius:32px;background:#1d0b36b8;box-shadow:0 0 80px #e4b6ff8c;color:#f5e7ff;font-size:75px;font-weight:200;line-height:1;transform:rotate(-6deg)}
+.portal-caption{font-size:clamp(28px,5vw,54px);font-weight:800;letter-spacing:.22em;text-shadow:0 0 35px #fff8;color:white}
+.portal-overlay.out{animation:portal-overlay-out .7s ease forwards}
+@keyframes portal-fill{0%{transform:scale(.01);border-radius:50%;opacity:0}20%{opacity:1}100%{transform:scale(3.5);border-radius:0;opacity:1}}
+@keyframes portal-clear{0%{transform:scale(3.5);border-radius:0;opacity:1}100%{transform:scale(.01);border-radius:50%;opacity:0}}
+@keyframes portal-bubble-rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.05) translateY(80px)}25%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(2) translateY(-140px)}}
+@keyframes portal-core-in{0%{opacity:0;transform:scale(.4);filter:blur(10px)}100%{opacity:1;transform:scale(1);filter:blur(0)}}
+@keyframes portal-core-out{to{opacity:0;transform:scale(1.4);filter:blur(12px)}}
+@keyframes portal-overlay-out{0%,80%{visibility:visible;opacity:1}100%{visibility:hidden;opacity:0}}
+@media(prefers-reduced-motion:reduce){.portal-overlay,.portal-bubble,.portal-backdrop,.portal-core{animation:none!important;transition:none!important}}
