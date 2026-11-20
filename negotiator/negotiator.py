@@ -37,7 +37,7 @@ create table if not exists sent_log (peer_id integer not null, sent_at integer n
 create table if not exists message_log (peer_id integer not null, direction text not null, body text not null, created_at integer not null);
 """)
 db.commit()
-FINANCIAL = re.compile(r"(?i)(\\b(?:€|\\$|usd|eur|usdt|ftd|cpa|rev\\s?share|rs|kpi|roi|budget|deposit|payment|payout|invoice|contract|agreement|deal|fixed|upfront|postpay|wager|bonus|fee|rate|offer|commission|percent|percentage|guarantee|deadline|signature|approve|accept|confirm|commit|transfer|wallet|kyc|license|licence|licença|pagamento|contrato|acordo|valor|depósito|comissão|proposta|fechar|aceito|aceitamos|aprovado|garantimos|assinar)\\b|\\d+[.,]?\\d*\\s?[%€$])")
+FINANCIAL = re.compile(r"(?i)(\b(?:€|\$|usd|eur|usdt|ftd|cpa|rev\s?share|rs|kpi|roi|budget|deposit|payment|payout|invoice|contract|agreement|deal|fixed|upfront|postpay|wager|bonus|fee|rate|offer|commission|percent|percentage|guarantee|deadline|signature|approve|accept|confirm|commit|transfer|wallet|kyc|license|licence|licença|pagamento|contrato|acordo|valor|depósito|comissão|proposta|fechar|aceito|aceitamos|aprovado|garantimos|assinar)\b|\d+[.,]?\d*\s?[%€$])")
 SYSTEM = """You are VELYRA AI Negotiator, an openly identified AI assistant working for VELYRA.
 You are communicating with a professional affiliate manager. Use natural, brief, respectful English or European Portuguese matching the incoming message.
 Scope: business-to-business creator sponsorship discussions, never marketing to gamblers.
@@ -77,12 +77,12 @@ async def create_pending(peer_id, source_id, text, reason):
     cur=db.execute("insert into pending(peer_id,source_message_id,text,created_at) values (?,?,?,?)",
                    (peer_id,source_id,text,int(time.time())))
     db.commit()
-    await notify_owner(f"VELYRA AI | APROVAÇÃO #{cur.lastrowid}\\nChat: {peer_id}\\nMotivo: {reason}\\n\\n{text}\\n\\n/approve {cur.lastrowid}  ou  /reject {cur.lastrowid}")
+    await notify_owner(f"VELYRA AI | APROVAÇÃO #{cur.lastrowid}\nChat: {peer_id}\nMotivo: {reason}\n\n{text}\n\n/approve {cur.lastrowid}  ou  /reject {cur.lastrowid}")
     log.info("Approval required for peer %s, id %s",peer_id,cur.lastrowid)
 
 async def send_reply(peer_id, text):
     if DRY_RUN:
-        await notify_owner(f"[SIMULAÇÃO] Para {peer_id}:\\n{text}")
+        await notify_owner(f"[SIMULAÇÃO] Para {peer_id}:\n{text}")
         return
     await asyncio.sleep(MIN_DELAY)
     if not allowed(peer_id):
@@ -120,6 +120,8 @@ async def incoming(event):
         if not reply or len(reply)>700:
             await notify_owner(f"VELYRA AI | Resposta inválida em {peer}.")
             return
+        if not any(h["role"]=="assistant" for h in history):
+            reply="Olá! Sou o assistente de IA da VELYRA. " + reply if not re.search(r"(?i)\b(ai|ia|artificial intelligence|inteligência artificial)\b",reply) else reply
         review=requires_review(message,reply,obj.get("needs_approval",True))
         if review:
             await create_pending(peer,event.id,reply,obj.get("reason","Condições comerciais ou conteúdo sensível"))
@@ -154,10 +156,10 @@ async def commands(event):
             await notify_owner(f"Chat {peer} desativado.")
         elif cmd=="/list":
             rows=db.execute("select * from allowlist order by peer_id").fetchall()
-            await notify_owner("Allowlist:\\n"+("\\n".join(f"{r['peer_id']} {r['label']} {'ON' if r['enabled'] else 'OFF'}" for r in rows) or "(vazia)"))
+            await notify_owner("Allowlist:\n"+("\n".join(f"{r['peer_id']} {r['label']} {'ON' if r['enabled'] else 'OFF'}" for r in rows) or "(vazia)"))
         elif cmd=="/pending":
             rows=db.execute("select * from pending where status='pending' order by id desc limit 20").fetchall()
-            await notify_owner("Pendentes:\\n"+("\\n".join(f"#{r['id']} chat {r['peer_id']}: {r['text'][:120]}" for r in rows) or "(nenhum)"))
+            await notify_owner("Pendentes:\n"+("\n".join(f"#{r['id']} chat {r['peer_id']}: {r['text'][:120]}" for r in rows) or "(nenhum)"))
         elif cmd in ("/approve","/reject") and len(parts)>=2:
             item=int(parts[1])
             row=db.execute("select * from pending where id=? and status='pending'",(item,)).fetchone()
