@@ -1,25 +1,37 @@
-# VELYRA — Future Agency Concept
+# VELYRA Control — deployment branch
 
-Website futurista editável em HTML, CSS e JavaScript puro.
+This branch implements a secure Supabase-backed VELYRA creator dashboard at `/pagante`.
 
-## Como executar no VS Code
+## What is built
+- Public website: only **Streamers** and **Managers**; published profiles from Supabase.
+- Private admin login with Supabase Auth (email and password).
+- Admin-only create, edit, delete, publish/unpublish, reorder, search.
+- Profile photo upload to a dedicated public Supabase Storage bucket.
+- Row-level security restricting all writes and unpublished profiles to admins.
+- No client-side hard-coded password, no public link to /pagante.
 
-1. Extrai o ZIP e abre a pasta no VS Code.
-2. Instala a extensão **Live Server** (opcional).
-3. Clica em **Go Live** ou abre `index.html` no browser.
-4. Altera `style.css`, `index.html` ou `app.js` e guarda com Ctrl+S. O Live Server atualiza a página.
+## Not live yet
+**DO NOT merge to main** until a *dedicated* Supabase VELYRA project has been configured. The existing user's Supabase projects are unrelated. `assets/config.js` is intentionally blank.
 
-## Funcionalidades
+## Setup
+1. Create a **new VELYRA project** under the selected Supabase organization.
+2. In Supabase SQL Editor, execute `supabase/velyra.sql` once. Inspect the results and security advisors.
+3. Go to Supabase > Authentication > Users, create/invite a VELYRA administrator with a **strong unique password**. Do not allow public sign-up for admin accounts.
+4. Copy that Auth user's UUID and execute in SQL Editor:
+   `insert into public.velyra_admins(user_id) values ('THE-AUTH-USER-UUID');`
+5. Get your **Project URL** and **publishable key** from Supabase settings. Fill ONLY these public values in `assets/config.js`:
+   `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
+   Never use a service-role or secret key.
+6. Verify: anonymous visitors see only published profiles; unlisted and signed-in non-admin users cannot edit records; admin photo uploads work; login and logout work; check Supabase Security Advisors.
+7. Remove the legacy `admin.*`, `app.js`, and `style.css` files before merge. This branch deletes them.
+8. Merge branch to main once validated. The connected Vercel project deploys automatically.
 
-- Landing page responsiva, efeitos visuais e animações em canvas.
-- Português/inglês, alternância de modos visuais, laboratório de identidades.
-- Formulário de contacto que copia uma mensagem para a área de transferência.
-- `admin.html`: **demonstração local não ligada ao site público** de gestão de criadores, contactos, campanhas e tarefas com armazenamento `localStorage` e exportação JSON.
+## Files
+- `index.html` / `assets/site.js`: public content.
+- `pagante/index.html` / `assets/dashboard.js`: private login and CRUD interface.
+- `assets/style.css` / `assets/dashboard.css`: visual identity.
+- `assets/config.js`: public integration config (safe to commit).
+- `supabase/velyra.sql`: initial database and RLS setup.
+- `vercel.json`: static rewrites for `/pagante`.
 
-## Limitações importantes
-
-**Não há autenticação real nesta versão.** `admin.html` é apenas uma demonstração local, não uma dashboard privada segura. Não coloques dados sensíveis nela nem publiques a dashboard como se estivesse protegida.
-
-Para uma versão de produção: implementar autenticação no servidor (com 2FA), PostgreSQL/Supabase com regras de acesso, APIs protegidas, armazenamento privado, backups, auditoria e RGPD. O website público e a dashboard deverão ser separados antes do deploy.
-
-O nome VELYRA é uma proposta criativa. Verificar disponibilidade de domínio e marca antes de utilização comercial.
+Security note: An unlisted URL is not an access control. Supabase Auth and RLS enforce authorization; page HTML may be visited by anyone but private profile data and actions are blocked. Publicly published photos are intentionally readable by anyone with their URL.
