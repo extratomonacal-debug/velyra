@@ -21,16 +21,17 @@ function countryGroup(title,flag,subtitle){
 function prospectCard(p){
  const card=element("article","profile prospect-profile");
  const handle=p[0].toLowerCase();
- const imageUrl=handle==="andypsx"?"https://unavatar.io/kick/andypsx":handle==="neburix"?null:"https://avatarsapi.com/twitch/"+encodeURIComponent(handle);
  const avatar=element("div","avatar prospect-avatar",p[0].slice(0,1).toUpperCase());
- if(imageUrl){
-  const img=element("img","prospect-photo");
-  img.src=imageUrl;img.alt="Imagem de perfil de "+p[0];img.loading="lazy";
-  img.addEventListener("error",()=>img.replaceWith(avatar),{once:true});
-  card.append(img);
- }else card.append(avatar);
- card.append(element("h3","",p[0]),element("div","role","Perfil em análise"));
- card.append(element("p","","Criador identificado para possível contacto. Sem parceria confirmada com a VELYRA."));
+ const sources=handle==="andypsx"
+  ?["https://unavatar.io/kick/andypsx"]
+  :["https://unavatar.io/twitch/"+encodeURIComponent(handle),"https://avatarsapi.com/twitch/"+encodeURIComponent(handle)];
+ const img=element("img","prospect-photo");
+ img.alt="Imagem de perfil de "+p[0];img.loading="lazy";img.referrerPolicy="no-referrer";
+ let attempt=0;
+ img.addEventListener("error",()=>{attempt++;if(attempt<sources.length)img.src=sources[attempt];else img.replaceWith(avatar);});
+ img.src=sources[0];card.append(img);
+ card.append(element("h3","",p[0]),element("div","role","Streamer"));
+
  const socials=element("div","socials"),a=element("a","social-button","Ver perfil ↗");
  a.href=p[1];a.target="_blank";a.rel="noopener noreferrer";socials.append(a);card.append(socials);
  return card;
@@ -74,7 +75,7 @@ function display(list,kind){
   if(socials.children.length)card.append(socials);
   cardTarget.append(card);
  }
- if(kind==="streamer"){for(const [country,flag] of [["Brasil","🇧🇷"],["Espanha","🇪🇸"]]){const group=countryGroup(country,flag,"Perfis em análise · sem representação confirmada");for(const p of prospects[country])group.grid.append(prospectCard(p));group.section.dataset.country=country;group.section.id="panel-"+country;group.section.setAttribute("role","tabpanel");group.section.setAttribute("aria-labelledby","tab-"+country);group.section.hidden=activeCountry!==country;target.append(group.section);}}
+ if(kind==="streamer"){for(const [country,flag] of [["Brasil","🇧🇷"],["Espanha","🇪🇸"]]){const group=countryGroup(country,flag,"Streamers internacionais");for(const p of prospects[country])group.grid.append(prospectCard(p));group.section.dataset.country=country;group.section.id="panel-"+country;group.section.setAttribute("role","tabpanel");group.section.setAttribute("aria-labelledby","tab-"+country);group.section.hidden=activeCountry!==country;target.append(group.section);}}
 }
 async function load(){
  if(!configured)return;
