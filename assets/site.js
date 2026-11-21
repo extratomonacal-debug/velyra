@@ -4,9 +4,33 @@ const observer=new IntersectionObserver(entries=>{for(const item of entries){if(
 document.querySelectorAll(".reveal").forEach(el=>observer.observe(el));
 function element(tag,cls,content){const e=document.createElement(tag);if(cls)e.className=cls;if(content!==undefined)e.textContent=content;return e;}
 function safeUrl(str){try{const url=new URL(str);return ["https:","http:"].includes(url.protocol)?url.href:null;}catch{return null;}}
+const prospects={
+ Brasil:[["vaderffps","https://www.twitch.tv/vaderffps"],["rachaxp7","https://www.twitch.tv/rachaxp7"],["poderosobagual","https://www.twitch.tv/poderosobagual"],["dona","https://www.twitch.tv/dona"]],
+ Espanha:[["topbonusio","https://www.twitch.tv/topbonusio"],["PlayerMakerTV","https://www.twitch.tv/PlayerMakerTV"],["Andypsx","https://kick.com/andypsx"],["Neburix","https://www.google.com/search?q=Neburix+streamer"]]
+};
+function countryGroup(title,flag,subtitle){
+ const section=element("section","country-group");
+ const header=element("div","country-header");
+ const marker=element("span","country-flag",flag);
+ const copy=element("div","country-copy");
+ copy.append(element("h3","",title),element("p","",subtitle));
+ header.append(marker,copy);section.append(header);
+ const grid=element("div","grid country-grid");section.append(grid);
+ return {section,grid};
+}
+function prospectCard(p){
+ const card=element("article","profile prospect-profile");
+ card.append(element("div","avatar prospect-avatar",p[0].slice(0,1).toUpperCase()),element("h3","",p[0]),element("div","role","Perfil em análise"));
+ card.append(element("p","","Criador identificado para possível contacto. Sem parceria confirmada com a VELYRA."));
+ const socials=element("div","socials"),a=element("a","social-button","Ver perfil ↗");
+ a.href=p[1];a.target="_blank";a.rel="noopener noreferrer";socials.append(a);card.append(socials);
+ return card;
+}
 function display(list,kind){
  const target=document.getElementById(kind+"-list");target.replaceChildren();
- if(!list.length){const e=element("div","empty");e.append(element("h3","",kind==="streamer"?"Novos streamers em breve.":"Conhece a equipa em breve."),element("p","","Os perfis confirmados vão aparecer aqui."));target.append(e);return;}
+ if(!list.length&&kind!=="streamer"){const e=element("div","empty");e.append(element("h3","",kind==="streamer"?"Novos streamers em breve.":"Conhece a equipa em breve."),element("p","","Os perfis confirmados vão aparecer aqui."));target.append(e);return;}
+ let cardTarget=target;
+ if(kind==="streamer"){const pt=countryGroup("Portugal","🇵🇹","Criadores apresentados pela VELYRA");target.append(pt.section);cardTarget=pt.grid;}
  for(const entry of list){
   const card=element("article","profile");
   if(safeUrl(entry.photo_url)){const img=element("img");img.src=safeUrl(entry.photo_url);img.alt="Fotografia de "+entry.name;img.loading="lazy";img.referrerPolicy="no-referrer";img.addEventListener("error",()=>{const avatar=element("div","avatar",entry.name.trim().slice(0,1).toUpperCase());img.replaceWith(avatar)},{once:true});card.append(img);}
@@ -20,8 +44,9 @@ function display(list,kind){
     const a=element("a","social-button social-"+key.replace("_url",""),label);a.href=u;a.rel="noopener noreferrer";a.target="_blank";a.setAttribute("aria-label","Abrir "+label+" de "+entry.name);const arrow=element("span","social-arrow","↗");a.append(arrow);socials.append(a);
   }
   if(socials.children.length)card.append(socials);
-  target.append(card);
+  cardTarget.append(card);
  }
+ if(kind==="streamer"){for(const [country,flag] of [["Brasil","🇧🇷"],["Espanha","🇪🇸"]]){const group=countryGroup(country,flag,"Perfis em análise · sem representação confirmada");for(const p of prospects[country])group.grid.append(prospectCard(p));target.append(group.section);}}
 }
 async function load(){
  if(!configured)return;
